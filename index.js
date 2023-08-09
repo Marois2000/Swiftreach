@@ -13,8 +13,11 @@ for(let i = 0; i < walls.length; i += 100) {
 const image = new Image();
 image.src = './world/dungeon crawl.png';
 
-const playerImage = new Image();
-playerImage.src = './character/Player.png';
+const playerRightImage = new Image();
+playerRightImage.src = './character/player right.png';
+
+const playerLeftImage = new Image();
+playerLeftImage.src = './character/player left.png';
 
 const foregroundImage = new Image();
 foregroundImage.src = './world/foreground.png'
@@ -30,12 +33,16 @@ const background = new Sprite({
 
 const player = new Sprite({
     position: {
-      x: canvas.width / 2 - 49 / 8,
-      y: ((canvas.height / 4) * 3) - 14 / 8  
+      x: canvas.width / 2 - 192 / 8,
+      y: ((canvas.height / 4) * 3) - 68 / 8  
     }, 
-    image: playerImage,
+    image: playerRightImage,
     frames: {
         max: 4
+    },
+    sprites: {
+        left: playerLeftImage,
+        right: playerRightImage
     }
 })
 
@@ -88,8 +95,8 @@ function rectangularCollision({rectangle1, rectangle2}) {
 
 function grounded( {player, surface} ) {
     return (
-        player.position.y + player.height >= surface.position.y - 1 &&
-        player.position.y + player.height <= surface.position.y + 1 &&
+        player.position.y + player.height >= surface.position.y - 3 &&
+        player.position.y + player.height <= surface.position.y + 3 &&
         player.position.y <= surface.position.y + surface.height &&
         player.position.x + (player.width / 2) >= surface.position.x &&
         player.position.x + (player.width / 2) <= surface.position.x + surface.width
@@ -98,6 +105,8 @@ function grounded( {player, surface} ) {
 
 
 let yVelocity = 0
+let xVelocity = 3
+const maxSpeed = 3
 function animate() {
     window.requestAnimationFrame(animate);
     background.draw();
@@ -110,13 +119,16 @@ function animate() {
     
 
     let moving = true;
+    player.moving = false
     if(keys.a.pressed && lastKey === 'a') {
+        player.moving = true
+        player.image = player.sprites.left
         for(let i = 0; i < boundaries.length; i++) {
             const boundary = boundaries[i]
             if(rectangularCollision({
                 rectangle1: player,
                 rectangle2: {...boundary, position: {
-                    x: boundary.position.x + 5,
+                    x: boundary.position.x + xVelocity,
                     y: boundary.position.y
                 }}
             })) {
@@ -127,17 +139,19 @@ function animate() {
 
         if(moving) {
             movables.forEach((movable) => {
-                movable.position.x += 5;
+                movable.position.x += xVelocity;
             })
         }
         
     } else if(keys.d.pressed && lastKey === 'd') {
+        player.moving = true
+        player.image = player.sprites.right
         for(let i = 0; i < boundaries.length; i++) {
             const boundary = boundaries[i]
             if(rectangularCollision({
                 rectangle1: player,
                 rectangle2: {...boundary, position: {
-                    x: boundary.position.x - 5,
+                    x: boundary.position.x - xVelocity,
                     y: boundary.position.y
                 }}
             })) {
@@ -148,7 +162,7 @@ function animate() {
 
         if(moving) {
             movables.forEach((movable) => {
-                movable.position.x -= 5;
+                movable.position.x -= xVelocity;
             })
         }
     }
@@ -157,8 +171,8 @@ function animate() {
     for(let i = 0; i < boundaries.length; i++) {
         if(player.x >= boundaries[i].position.x &&
         player.x <= boundaries[i].position.x + boundaries[i].width && 
-        player.y >= boundaries[i].position.y &&
-        player.y <= boundaries[i].position.y + boundaries[i].height) {
+        player.y + player.height >= boundaries[i].position.y &&
+        player.y + player.height <= boundaries[i].position.y + boundaries[i].height) {
             movables.position.y += 3
         }
     }
@@ -171,18 +185,22 @@ function animate() {
         })) {
             yVelocity = 0
             isGrounded = true;
+            keys.space.pressed = false;
             break
         } 
     }
 
     if(!isGrounded) {
-        yVelocity -= 0.01 
+        yVelocity -= 0.035
+    }
+
+    if(yVelocity > maxSpeed) {
+        yVelocity = maxSpeed
     }
 
     movables.forEach((movable) => {
         movable.position.y += yVelocity
     })
-    
     
 }
 
@@ -203,10 +221,25 @@ window.addEventListener("keydown", (e) => {
             break;
 
         case " ":
-            yVelocity += 1.5
-            movables.forEach((movable) => {
-                movable.position.y += yVelocity
-            })
+            isGrounded = false
+            for(let i = 0; i < boundaries.length; i++) {
+                if(grounded({
+                    player: player,
+                    surface: boundaries[i]
+                })) {
+                    yVelocity = 0
+                    isGrounded = true;
+                    keys.space.pressed = false;
+                    break
+                } 
+            }
+        
+            if(isGrounded) {
+                yVelocity += 3
+                movables.forEach((movable) => {
+                    movable.position.y += yVelocity
+                })
+            }
             break;
 
         default:

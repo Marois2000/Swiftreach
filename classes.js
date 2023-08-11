@@ -44,10 +44,13 @@ class Sprite {
 class Boundary {
     static width = 64
     static height = 64
-    constructor({position}) {
+    constructor({position, damage, key, chest}) {
         this.position = position
         this.width = 64
         this.height = 64
+        this.damage = damage
+        this.key = key,
+        this.chest = chest
     }
 
     draw() {
@@ -55,6 +58,8 @@ class Boundary {
         c.fillRect(this.position.x, this.position.y, this.width, this.height)
     }
 }
+
+
 
 const offset = {
     x: 0,

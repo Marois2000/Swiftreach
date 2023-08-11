@@ -10,6 +10,19 @@ for(let i = 0; i < walls.length; i += 100) {
     wallMap.push(walls.slice(i, i + 100));
 }
 
+//parse spikes
+const spikeMap = []
+for(let i = 0; i < spikedata.length; i += 100) {
+    spikeMap.push(spikedata.slice(i, i + 100))
+}
+
+const pointMap = []
+for(let i = 0; i < pointdata.length; i += 100) {
+    pointMap.push(pointdata.slice(i, i + 100))
+}
+
+
+
 const image = new Image();
 image.src = './world/dungeon crawl.png';
 
@@ -63,11 +76,55 @@ wallMap.forEach((row, i) => {
                 position: {
                     x: j * Boundary.width + offset.x,
                     y: i * Boundary.height + offset.y
-                }
+                },
+                damage: false
             }))
         }
     })
 })
+
+const spikes = []
+spikeMap.forEach((row, i) => {
+    row.forEach((spike, j) => {
+        if(spike === 271) {
+            spikes.push(new Boundary({
+                position: {
+                    x: j * Boundary.width + offset.x,
+                    y: i * Boundary.height + offset.y
+                }, 
+                damage: true
+            }))
+        }
+    })
+})
+
+const points = []
+pointMap.forEach((row, i) => {
+    row.forEach((point, j) => {
+        if(point === 271) {
+            points.push(new Boundary({
+                position: {
+                    x: j * Boundary.width + offset.x,
+                    y: i * Boundary.height + offset.y
+                }, 
+                damage: false,
+                key: true,
+                chest: false
+            }))
+        } else if(point === 272) {
+            points.push(new Boundary({
+                position: {
+                    x: j * Boundary.width + offset.x,
+                    y: i * Boundary.height + offset.y
+                }, 
+                damage: false,
+                key: false,
+                chest: true
+            }))
+        } 
+    })
+})
+
 
 const keys = {
     a: {
@@ -82,14 +139,31 @@ const keys = {
 }
 
 
-const movables = [background, ...boundaries, foreground]
+const movables = [background, ...boundaries, foreground, ...spikes, ...points]
 
 function rectangularCollision({rectangle1, rectangle2}) {
-    return (
-        rectangle1.position.x + rectangle1.width >= rectangle2.position.x &&
-        rectangle1.position.x <= rectangle2.position.x + rectangle2.width &&
-        rectangle1.position.y <= rectangle2.position.y + rectangle2.height &&
-        rectangle1.position.y + rectangle1.height -3 >= rectangle2.position.y
+
+    let collided = rectangle1.position.x + rectangle1.width >= rectangle2.position.x &&
+    rectangle1.position.x <= rectangle2.position.x + rectangle2.width &&
+    rectangle1.position.y <= rectangle2.position.y + rectangle2.height &&
+    rectangle1.position.y + rectangle1.height -3 >= rectangle2.position.y
+
+    let damage = false
+    let key = false
+    let chest = false
+
+    if(collided) {
+        damage = rectangle2.damage
+        key = rectangle2.key
+        chest = rectangle2.chest
+    }
+
+    return ( {
+            collided: collided,
+            damage: damage,
+            key: key,
+            chest: chest
+        }    
     )
 }
 
@@ -103,10 +177,20 @@ function grounded( {player, surface} ) {
     )
 }
 
+function hittingCeiling( {player, surface} ) {
+    return (
+        player.position.y <= surface.position.y + surface.height + 3 &&
+        player.position.y >= surface.position.y + surface.height - 3 &&
+        player.position.x + (player.width / 2) >= surface.position.x &&
+        player.position.x + (player.width / 2) <= surface.position.x + surface.width
+    )
+}
+
 
 let yVelocity = 0
-let xVelocity = 3
-const maxSpeed = 3
+let xVelocity = 2.5
+const maxSpeed = -3
+
 function animate() {
     window.requestAnimationFrame(animate);
     background.draw();
@@ -114,6 +198,12 @@ function animate() {
         boundary.draw();
     })
     player.draw()
+    spikes.forEach((spike) => {
+        spike.draw();
+    })
+    points.forEach((point) => {
+        point.draw();
+    })
     foreground.draw()
     
     
@@ -131,7 +221,7 @@ function animate() {
                     x: boundary.position.x + xVelocity,
                     y: boundary.position.y
                 }}
-            })) {
+            }).collided) {
                 moving = false;
                 break
             }
@@ -154,7 +244,7 @@ function animate() {
                     x: boundary.position.x - xVelocity,
                     y: boundary.position.y
                 }}
-            })) {
+            }).collided) {
                 moving = false;
                 break
             }
@@ -167,15 +257,35 @@ function animate() {
         }
     }
 
-    //fix falling through floor glitch
-    for(let i = 0; i < boundaries.length; i++) {
-        if(player.x >= boundaries[i].position.x &&
-        player.x <= boundaries[i].position.x + boundaries[i].width && 
-        player.y + player.height >= boundaries[i].position.y &&
-        player.y + player.height <= boundaries[i].position.y + boundaries[i].height) {
-            movables.position.y += 3
+    for(let i = 0; i < spikes.length; i++) {
+        const spike = spikes[i]
+        if(rectangularCollision({
+            rectangle1: player,
+            rectangle2: {...spike, position: {
+                x: spike.position.x + xVelocity,
+                y: spike.position.y
+            }}
+        }).damage) {
+            location.reload()
+            break
         }
     }
+
+    for(let i = 0; i < points.length; i++) {
+        const point = points[i]
+        if(rectangularCollision({
+            rectangle1: player,
+            rectangle2: {...point, position: {
+                x: point.position.x + xVelocity,
+                y: point.position.y
+            }}
+        }).key) {
+            console.log("key")
+            break
+        }
+    }
+
+    
 
     isGrounded = false
     for(let i = 0; i < boundaries.length; i++) {
@@ -194,14 +304,29 @@ function animate() {
         yVelocity -= 0.035
     }
 
-    if(yVelocity > maxSpeed) {
+    if(yVelocity < maxSpeed) {
         yVelocity = maxSpeed
+    }
+
+    isHittingCeiling = false
+    for(let i = 0; i < boundaries.length; i++) {
+        if(hittingCeiling({
+            player: player,
+            surface: boundaries[i]
+        })) {
+            yVelocity = 0
+            isHittingCeiling = true;
+            break
+        } 
+    }
+
+    if(isHittingCeiling) {
+        yVelocity = -0.5
     }
 
     movables.forEach((movable) => {
         movable.position.y += yVelocity
     })
-    
 }
 
 animate();

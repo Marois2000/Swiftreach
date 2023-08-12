@@ -35,6 +35,15 @@ playerLeftImage.src = './character/player left.png';
 const foregroundImage = new Image();
 foregroundImage.src = './world/foreground.png'
 
+const keyImage = new Image()
+keyImage.src = './world/key.png'
+
+const chestClosedImage = new Image()
+chestClosedImage.src = './world/chest closed.png'
+
+const chestOpenImage = new Image()
+chestOpenImage.src = './world/chest open.png'
+
 
 const background = new Sprite({
     position: {
@@ -65,7 +74,30 @@ const foreground = new Sprite({
         y: offset.y
     },
     image: foregroundImage
-    
+})
+
+const key = new Sprite({
+    position: {
+        x: offset.x,
+        y: offset.y
+    },
+    image: keyImage
+})
+
+const chestClosed = new Sprite({
+    position: {
+        x: offset.x,
+        y: offset.y
+    },
+    image: chestClosedImage
+})
+
+const chestOpen = new Sprite({
+    position: {
+        x: offset.x,
+        y: offset.y
+    },
+    image: chestOpenImage
 })
 
 const boundaries = []
@@ -139,7 +171,7 @@ const keys = {
 }
 
 
-const movables = [background, ...boundaries, foreground, ...spikes, ...points]
+const movables = [background, ...boundaries, foreground, ...spikes, ...points, key, chestClosed, chestOpen]
 
 function rectangularCollision({rectangle1, rectangle2}) {
 
@@ -191,6 +223,9 @@ let yVelocity = 0
 let xVelocity = 2.5
 const maxSpeed = -3
 
+let keyCollected = false
+let win = false
+
 function animate() {
     window.requestAnimationFrame(animate);
     background.draw();
@@ -204,6 +239,16 @@ function animate() {
     points.forEach((point) => {
         point.draw();
     })
+    if(!keyCollected) {
+        key.draw()
+    }
+
+    if(win) {
+        chestOpen.draw()
+    } else {
+        chestClosed.draw()
+    }
+    
     foreground.draw()
     
     
@@ -280,7 +325,18 @@ function animate() {
                 y: point.position.y
             }}
         }).key) {
-            console.log("key")
+            keyCollected = true
+            break
+        } else if(rectangularCollision({
+            rectangle1: player,
+            rectangle2: {...point, position: {
+                x: point.position.x + xVelocity,
+                y: point.position.y
+            }}
+        }).chest) {
+            if(keyCollected) {
+                win = true
+            }
             break
         }
     }

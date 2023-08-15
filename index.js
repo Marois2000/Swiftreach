@@ -220,14 +220,23 @@ function hittingCeiling( {player, surface} ) {
 
 
 let yVelocity = 0
-let xVelocity = 2.5
+let xVelocity = 50
 const maxSpeed = -3
 
 let keyCollected = false
 let win = false
 
-function animate() {
+let lastTime = 0
+let globalDT = 0
+
+function animate(timestamp) {
     window.requestAnimationFrame(animate);
+
+    const deltaTime = (timestamp - lastTime) / 100
+    lastTime = timestamp
+    globalDT = deltaTime
+
+
     background.draw();
     boundaries.forEach((boundary) => {
         boundary.draw();
@@ -263,7 +272,7 @@ function animate() {
             if(rectangularCollision({
                 rectangle1: player,
                 rectangle2: {...boundary, position: {
-                    x: boundary.position.x + xVelocity,
+                    x: boundary.position.x + xVelocity * deltaTime,
                     y: boundary.position.y
                 }}
             }).collided) {
@@ -274,7 +283,7 @@ function animate() {
 
         if(moving) {
             movables.forEach((movable) => {
-                movable.position.x += xVelocity;
+                movable.position.x += xVelocity * deltaTime;
             })
         }
         
@@ -286,7 +295,7 @@ function animate() {
             if(rectangularCollision({
                 rectangle1: player,
                 rectangle2: {...boundary, position: {
-                    x: boundary.position.x - xVelocity,
+                    x: boundary.position.x - xVelocity * deltaTime,
                     y: boundary.position.y
                 }}
             }).collided) {
@@ -297,7 +306,7 @@ function animate() {
 
         if(moving) {
             movables.forEach((movable) => {
-                movable.position.x -= xVelocity;
+                movable.position.x -= xVelocity * deltaTime;
             })
         }
     }
@@ -307,7 +316,7 @@ function animate() {
         if(rectangularCollision({
             rectangle1: player,
             rectangle2: {...spike, position: {
-                x: spike.position.x + xVelocity,
+                x: spike.position.x + xVelocity * deltaTime ,
                 y: spike.position.y
             }}
         }).damage) {
@@ -321,7 +330,7 @@ function animate() {
         if(rectangularCollision({
             rectangle1: player,
             rectangle2: {...point, position: {
-                x: point.position.x + xVelocity,
+                x: point.position.x + xVelocity * deltaTime,
                 y: point.position.y
             }}
         }).key) {
@@ -330,7 +339,7 @@ function animate() {
         } else if(rectangularCollision({
             rectangle1: player,
             rectangle2: {...point, position: {
-                x: point.position.x + xVelocity,
+                x: point.position.x + xVelocity * deltaTime,
                 y: point.position.y
             }}
         }).chest) {
@@ -357,7 +366,7 @@ function animate() {
     }
 
     if(!isGrounded) {
-        yVelocity -= 0.035
+        yVelocity -= 0.6 * deltaTime
     }
 
     if(yVelocity < maxSpeed) {
@@ -385,7 +394,7 @@ function animate() {
     })
 }
 
-animate();
+animate(0);
 
 let lastKey = ' ';
 window.addEventListener("keydown", (e) => {
@@ -416,7 +425,7 @@ window.addEventListener("keydown", (e) => {
             }
         
             if(isGrounded) {
-                yVelocity += 3
+                yVelocity += 3.2
                 movables.forEach((movable) => {
                     movable.position.y += yVelocity
                 })

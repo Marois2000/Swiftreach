@@ -63,5 +63,5 @@ class Boundary {
 
 const offset = {
     x: 0,
-    y: -1045
+    y: -1030
 }

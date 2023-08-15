@@ -425,7 +425,7 @@ window.addEventListener("keydown", (e) => {
             }
         
             if(isGrounded) {
-                yVelocity += 3.2
+                yVelocity += 53 * globalDT
                 movables.forEach((movable) => {
                     movable.position.y += yVelocity
                 })

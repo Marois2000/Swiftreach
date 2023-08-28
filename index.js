@@ -211,8 +211,8 @@ function grounded( {player, surface} ) {
 
 function hittingCeiling( {player, surface} ) {
     return (
-        player.position.y <= surface.position.y + surface.height + 3 &&
-        player.position.y >= surface.position.y + surface.height - 3 &&
+        player.position.y <= surface.position.y + surface.height + 5 &&
+        player.position.y >= surface.position.y + surface.height - 5 &&
         player.position.x + (player.width / 2) >= surface.position.x &&
         player.position.x + (player.width / 2) <= surface.position.x + surface.width
     )
@@ -221,7 +221,7 @@ function hittingCeiling( {player, surface} ) {
 
 let yVelocity = 0
 let xVelocity = 50
-const maxSpeed = -3
+const maxSpeed = -5
 
 let keyCollected = false
 let win = false
@@ -366,7 +366,7 @@ function animate(timestamp) {
     }
 
     if(!isGrounded) {
-        yVelocity -= 0.6 * deltaTime
+        yVelocity -= 2.5 * deltaTime
     }
 
     if(yVelocity < maxSpeed) {
@@ -386,7 +386,7 @@ function animate(timestamp) {
     }
 
     if(isHittingCeiling) {
-        yVelocity = -0.5
+        yVelocity = -1.2
     }
 
     movables.forEach((movable) => {
@@ -425,7 +425,7 @@ window.addEventListener("keydown", (e) => {
             }
         
             if(isGrounded) {
-                yVelocity += 53 * globalDT
+                yVelocity += 65 * globalDT
                 movables.forEach((movable) => {
                     movable.position.y += yVelocity
                 })
@@ -443,7 +443,6 @@ window.addEventListener("keyup", (e) => {
             keys.d.pressed = false
             break;
     
-
         case "a":
             keys.a.pressed = false
             break;

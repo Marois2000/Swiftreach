@@ -31,7 +31,7 @@ class Sprite {
             this.frames.elapsed++
          }
 
-         if(this.frames.elapsed % 20 ===0) {
+         if(this.frames.elapsed % 7 ===0) {
             if(this.frames.val < this.frames.max - 1) {
                 this.frames.val++
              } else {

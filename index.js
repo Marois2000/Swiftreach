@@ -201,8 +201,8 @@ function rectangularCollision({rectangle1, rectangle2}) {
 
 function grounded( {player, surface} ) {
     return (
-        player.position.y + player.height >= surface.position.y - 3 &&
-        player.position.y + player.height <= surface.position.y + 3 &&
+        player.position.y + player.height >= surface.position.y - 10 &&
+        player.position.y + player.height <= surface.position.y + 10 &&
         player.position.y <= surface.position.y + surface.height &&
         player.position.x + (player.width / 2) >= surface.position.x &&
         player.position.x + (player.width / 2) <= surface.position.x + surface.width
@@ -212,7 +212,7 @@ function grounded( {player, surface} ) {
 function hittingCeiling( {player, surface} ) {
     return (
         player.position.y <= surface.position.y + surface.height + 5 &&
-        player.position.y >= surface.position.y + surface.height - 5 &&
+        player.position.y >= surface.position.y + surface.height - 5  &&
         player.position.x + (player.width / 2) >= surface.position.x &&
         player.position.x + (player.width / 2) <= surface.position.x + surface.width
     )
@@ -221,7 +221,7 @@ function hittingCeiling( {player, surface} ) {
 
 let yVelocity = 0
 let xVelocity = 50
-const maxSpeed = -5
+const maxSpeed = -10
 
 let keyCollected = false
 let win = false
@@ -386,7 +386,7 @@ function animate(timestamp) {
     }
 
     if(isHittingCeiling) {
-        yVelocity = -1.2
+        yVelocity = -2.5
     }
 
     movables.forEach((movable) => {

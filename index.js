@@ -1,5 +1,28 @@
 const canvas = document.querySelector("canvas");
 const c = canvas.getContext("2d");
+const music = new Audio("world/Dungeon Theme.mp3")
+const keyIcon = document.querySelector(".key")
+const currentTime = document.getElementById("current")
+const fastestTime = document.getElementById("fast")
+const recentTime = document.getElementById("last")
+
+
+if(localStorage.getItem("fastTime") == null) {
+    fastestTime.innerHTML = "--:--"
+} else {
+    fastestTime.innerHTML = localStorage.getItem("fastTime")
+}
+
+if(localStorage.getItem("LastTime") == null) {
+    recentTime.innerHTML = "--:--"
+} else {
+    recentTime.innerHTML = localStorage.getItem("LastTime")
+}
+
+
+
+music.loop = true
+//music.play()
 
 canvas.width = 1024;
 canvas.height = 576;
@@ -50,7 +73,11 @@ const background = new Sprite({
         x: offset.x,
         y: offset.y
     },
-    image: image
+    image: image,
+    initialPosition: {
+        x: offset.x,
+        y: offset.y
+    }
 });
 
 const player = new Sprite({
@@ -68,12 +95,17 @@ const player = new Sprite({
     }
 })
 
+
 const foreground = new Sprite({
     position: {
         x: offset.x,
         y: offset.y
     },
-    image: foregroundImage
+    image: foregroundImage,
+    initialPosition: {
+        x: offset.x,
+        y: offset.y
+    }
 })
 
 const key = new Sprite({
@@ -81,7 +113,11 @@ const key = new Sprite({
         x: offset.x,
         y: offset.y
     },
-    image: keyImage
+    image: keyImage,
+    initialPosition: {
+        x: offset.x,
+        y: offset.y
+    }
 })
 
 const chestClosed = new Sprite({
@@ -89,7 +125,11 @@ const chestClosed = new Sprite({
         x: offset.x,
         y: offset.y
     },
-    image: chestClosedImage
+    image: chestClosedImage,
+    initialPosition: {
+        x: offset.x,
+        y: offset.y
+    }
 })
 
 const chestOpen = new Sprite({
@@ -97,7 +137,11 @@ const chestOpen = new Sprite({
         x: offset.x,
         y: offset.y
     },
-    image: chestOpenImage
+    image: chestOpenImage,
+    initialPosition: {
+        x: offset.x,
+        y: offset.y
+    }
 })
 
 const boundaries = []
@@ -109,7 +153,11 @@ wallMap.forEach((row, i) => {
                     x: j * Boundary.width + offset.x,
                     y: i * Boundary.height + offset.y
                 },
-                damage: false
+                damage: false,
+                initialPosition: {
+                    x: j * Boundary.width + offset.x,
+                    y: i * Boundary.height + offset.y
+                }
             }))
         }
     })
@@ -124,7 +172,11 @@ spikeMap.forEach((row, i) => {
                     x: j * Boundary.width + offset.x,
                     y: i * Boundary.height + offset.y
                 }, 
-                damage: true
+                damage: true,
+                initialPosition: {
+                    x: j * Boundary.width + offset.x,
+                    y: i * Boundary.height + offset.y
+                }
             }))
         }
     })
@@ -141,7 +193,11 @@ pointMap.forEach((row, i) => {
                 }, 
                 damage: false,
                 key: true,
-                chest: false
+                chest: false,
+                initialPosition: {
+                    x: j * Boundary.width + offset.x,
+                    y: i * Boundary.height + offset.y
+                }
             }))
         } else if(point === 272) {
             points.push(new Boundary({
@@ -151,7 +207,11 @@ pointMap.forEach((row, i) => {
                 }, 
                 damage: false,
                 key: false,
-                chest: true
+                chest: true,
+                initialPosition: {
+                    x: j * Boundary.width + offset.x,
+                    y: i * Boundary.height + offset.y
+                }
             }))
         } 
     })
@@ -220,7 +280,7 @@ function hittingCeiling( {player, surface} ) {
 
 
 let yVelocity = 0
-let xVelocity = 50
+let xVelocity = 55
 const maxSpeed = -10
 
 let keyCollected = false
@@ -262,54 +322,57 @@ function animate(timestamp) {
     
     
 
-    let moving = true;
-    player.moving = false
-    if(keys.a.pressed && lastKey === 'a') {
-        player.moving = true
-        player.image = player.sprites.left
-        for(let i = 0; i < boundaries.length; i++) {
-            const boundary = boundaries[i]
-            if(rectangularCollision({
-                rectangle1: player,
-                rectangle2: {...boundary, position: {
-                    x: boundary.position.x + xVelocity * deltaTime,
-                    y: boundary.position.y
-                }}
-            }).collided) {
-                moving = false;
-                break
+    if(!win) {
+        let moving = true;
+        player.moving = false
+        if(keys.a.pressed && lastKey === 'a') {
+            player.moving = true
+            player.image = player.sprites.left
+            for(let i = 0; i < boundaries.length; i++) {
+                const boundary = boundaries[i]
+                if(rectangularCollision({
+                    rectangle1: player,
+                    rectangle2: {...boundary, position: {
+                        x: boundary.position.x + xVelocity * deltaTime,
+                        y: boundary.position.y
+                    }}
+                }).collided) {
+                    moving = false;
+                    break
+                }
             }
-        }
 
-        if(moving) {
-            movables.forEach((movable) => {
-                movable.position.x += xVelocity * deltaTime;
-            })
-        }
-        
-    } else if(keys.d.pressed && lastKey === 'd') {
-        player.moving = true
-        player.image = player.sprites.right
-        for(let i = 0; i < boundaries.length; i++) {
-            const boundary = boundaries[i]
-            if(rectangularCollision({
-                rectangle1: player,
-                rectangle2: {...boundary, position: {
-                    x: boundary.position.x - xVelocity * deltaTime,
-                    y: boundary.position.y
-                }}
-            }).collided) {
-                moving = false;
-                break
+            if(moving) {
+                movables.forEach((movable) => {
+                    movable.position.x += xVelocity * deltaTime;
+                })
             }
-        }
+            
+        } else if(keys.d.pressed && lastKey === 'd') {
+            player.moving = true
+            player.image = player.sprites.right
+            for(let i = 0; i < boundaries.length; i++) {
+                const boundary = boundaries[i]
+                if(rectangularCollision({
+                    rectangle1: player,
+                    rectangle2: {...boundary, position: {
+                        x: boundary.position.x - xVelocity * deltaTime,
+                        y: boundary.position.y
+                    }}
+                }).collided) {
+                    moving = false;
+                    break
+                }
+            }
 
-        if(moving) {
-            movables.forEach((movable) => {
-                movable.position.x -= xVelocity * deltaTime;
-            })
+            if(moving) {
+                movables.forEach((movable) => {
+                    movable.position.x -= xVelocity * deltaTime;
+                })
+            }
         }
     }
+
 
     for(let i = 0; i < spikes.length; i++) {
         const spike = spikes[i]
@@ -320,7 +383,7 @@ function animate(timestamp) {
                 y: spike.position.y
             }}
         }).damage) {
-            location.reload()
+            takeDamage()
             break
         }
     }
@@ -334,6 +397,7 @@ function animate(timestamp) {
                 y: point.position.y
             }}
         }).key) {
+            keyIcon.src = "./icons/key icon.png"
             keyCollected = true
             break
         } else if(rectangularCollision({
@@ -345,6 +409,7 @@ function animate(timestamp) {
         }).chest) {
             if(keyCollected) {
                 win = true
+                winGame()
             }
             break
         }
@@ -386,12 +451,15 @@ function animate(timestamp) {
     }
 
     if(isHittingCeiling) {
-        yVelocity = -2.5
+        yVelocity = -2
     }
 
     movables.forEach((movable) => {
         movable.position.y += yVelocity
     })
+
+
+    currentTime.innerHTML = formatTime
 }
 
 animate(0);
@@ -424,7 +492,7 @@ window.addEventListener("keydown", (e) => {
                 } 
             }
         
-            if(isGrounded) {
+            if(isGrounded && !win) {
                 yVelocity += 65 * globalDT
                 movables.forEach((movable) => {
                     movable.position.y += yVelocity
@@ -455,3 +523,30 @@ window.addEventListener("keyup", (e) => {
             break;
     }
 })
+
+
+
+//Quality functions
+
+function takeDamage() {
+    keyCollected = false
+    keyIcon.src = ""
+    movables.forEach(movable => {
+        movable.reset()
+    });
+}
+
+function winGame() {
+    endTime = formatTime
+    clearInterval(timer)
+    localStorage.setItem("LastTime", endTime)
+    if(localStorage.getItem("fastTime") == null) {
+        localStorage.setItem("fastTime", endTime)
+    } else {
+        let currentFastest = localStorage.getItem("fastTime")
+        if(compareTimes(endTime, currentFastest)) {
+            localStorage.setItem("fastTime", endTime)
+        }
+    }
+    currentTime.innerHTML = endTime
+}

@@ -5,6 +5,14 @@ const keyIcon = document.querySelector(".key")
 const currentTime = document.getElementById("current")
 const fastestTime = document.getElementById("fast")
 const recentTime = document.getElementById("last")
+const winBanner = document.getElementById("winId")
+const play = document.querySelector(".play")
+
+play.addEventListener("click", (e) => {
+    location.reload()
+})
+
+winBanner.style.display = "none"
 
 
 if(localStorage.getItem("fastTime") == null) {
@@ -539,6 +547,8 @@ function takeDamage() {
 function winGame() {
     endTime = formatTime
     clearInterval(timer)
+    winBanner.style.display = "flex"
+
     localStorage.setItem("LastTime", endTime)
     if(localStorage.getItem("fastTime") == null) {
         localStorage.setItem("fastTime", endTime)

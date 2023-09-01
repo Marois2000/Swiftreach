@@ -9,34 +9,48 @@
 </head>
 <body>
 
-    <audio src="world/Dungeon Theme.mp3"></audio>
 
-    <div class="timer">
-        <h1 id="current" class="timetext">1:00</h1>
-        <img class="key" src="" alt="">
+    <img class="controls" src="icons/controls.png" alt="">
+
+    
+
+    <div id="game" class="container">
+        <div class="timer">
+            <h1 id="current" class="timetext">1:00</h1>
+            <img class="key" src="" alt="">
+        </div>
+    
+        <canvas></canvas>
+    
+        <div class="oldscores timer">
+            <div class="oldscorecontainer">
+                <h1 class="timelabel">Fastest Time</h1>
+                <h1 id="fast" class="timetext">1:00</h1>
+            </div>
+            <div class="oldscorecontainer">
+                <h1 class="timelabel">Last Time</h1>
+                <h1 id="last" class="timetext">1:00</h1>
+            </div>
+        </div>
+    
+        <div id="winId" class="wincontainer">
+            <div class="wintitle">
+                <h1>You Win!!!</h1>
+            </div>
+            <div>
+                <button id="replay" class="play">Play Again</button>
+            </div>
+        </div>
     </div>
 
-    <canvas></canvas>
 
-    <div class="oldscores timer">
-        <div class="oldscorecontainer">
-            <h1 class="timelabel">Fastest Time</h1>
-            <h1 id="fast" class="timetext">1:00</h1>
-        </div>
-        <div class="oldscorecontainer">
-            <h1 class="timelabel">Last Time</h1>
-            <h1 id="last" class="timetext">1:00</h1>
+    <div id="startmenu" class="startmenu">
+        <div class="title">
+            <h1>Swiftreach</h1>
+            <button id="start" class="play start">Play!</button>
         </div>
     </div>
-
-    <div id="winId" class="wincontainer">
-        <div class="wintitle">
-            <h1>You Win!!!</h1>
-        </div>
-        <div>
-            <button class="play">Play Again</button>
-        </div>
-    </div>
+    
 
     <script src="timer.js"></script>
     <script src="data/points.js"></script>

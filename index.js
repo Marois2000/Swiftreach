@@ -1,15 +1,30 @@
 const canvas = document.querySelector("canvas");
 const c = canvas.getContext("2d");
-const music = new Audio("world/Dungeon Theme.mp3")
+const music = new Audio("sounds/Dungeon Theme.mp3")
+const footSteps = new Audio("sounds/one step.mp3")
+const jump = new Audio("sounds/jump.mp3")
+const keyJingle = new Audio("sounds/key pickup.mp3")
+const stab = new Audio("sounds/stab.mp3")
+const winSound = new Audio("sounds/win.mp3")
+
+const startButton = document.getElementById("start")
+const startMenu = document.getElementById("startmenu")
+
 const keyIcon = document.querySelector(".key")
 const currentTime = document.getElementById("current")
 const fastestTime = document.getElementById("fast")
 const recentTime = document.getElementById("last")
 const winBanner = document.getElementById("winId")
-const play = document.querySelector(".play")
+const play = document.getElementById("replay")
 
-play.addEventListener("click", (e) => {
+play.addEventListener("click", () => {
     location.reload()
+})
+
+startButton.addEventListener("click", () => {
+    startMenu.style.display = "none"
+    music.play()
+    startTimer()
 })
 
 winBanner.style.display = "none"
@@ -30,7 +45,8 @@ if(localStorage.getItem("LastTime") == null) {
 
 
 music.loop = true
-//music.play()
+music.volume = 0.2
+jump.volume = 0.6
 
 canvas.width = 1024;
 canvas.height = 576;
@@ -327,13 +343,29 @@ function animate(timestamp) {
     }
     
     foreground.draw()
-    
+
+
+    isGrounded = false
+    for(let i = 0; i < boundaries.length; i++) {
+        if(grounded({
+            player: player,
+            surface: boundaries[i]
+        })) {
+            yVelocity = 0
+            isGrounded = true;
+            keys.space.pressed = false;
+            break
+        } 
+    }
     
 
     if(!win) {
         let moving = true;
         player.moving = false
         if(keys.a.pressed && lastKey === 'a') {
+            if(isGrounded) {
+                footSteps.play()
+            }
             player.moving = true
             player.image = player.sprites.left
             for(let i = 0; i < boundaries.length; i++) {
@@ -357,6 +389,9 @@ function animate(timestamp) {
             }
             
         } else if(keys.d.pressed && lastKey === 'd') {
+            if(isGrounded) {
+                footSteps.play()
+            }
             player.moving = true
             player.image = player.sprites.right
             for(let i = 0; i < boundaries.length; i++) {
@@ -405,8 +440,7 @@ function animate(timestamp) {
                 y: point.position.y
             }}
         }).key) {
-            keyIcon.src = "./icons/key icon.png"
-            keyCollected = true
+            pickupKey()
             break
         } else if(rectangularCollision({
             rectangle1: player,
@@ -501,6 +535,7 @@ window.addEventListener("keydown", (e) => {
             }
         
             if(isGrounded && !win) {
+                jump.play()
                 yVelocity += 65 * globalDT
                 movables.forEach((movable) => {
                     movable.position.y += yVelocity
@@ -537,6 +572,7 @@ window.addEventListener("keyup", (e) => {
 //Quality functions
 
 function takeDamage() {
+    stab.play()
     keyCollected = false
     keyIcon.src = ""
     movables.forEach(movable => {
@@ -545,6 +581,12 @@ function takeDamage() {
 }
 
 function winGame() {
+    winSound.loop = false
+    music.pause()
+    winSound.play()
+    setTimeout(function() {
+        winSound.pause()
+    }, 7000)
     endTime = formatTime
     clearInterval(timer)
     winBanner.style.display = "flex"
@@ -559,4 +601,14 @@ function winGame() {
         }
     }
     currentTime.innerHTML = endTime
+}
+
+function pickupKey() {
+    keyIcon.src = "./icons/key icon.png"
+    keyCollected = true
+    music.pause()
+    keyJingle.play()
+    setTimeout(function() {
+        music.play()
+    }, 3000)
 }

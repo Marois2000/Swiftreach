@@ -20,9 +20,6 @@ function startTimer() {
 function compareTimes(time1, time2) {
     time1Val = time1.split(":", 3)
     time2Val = time2.split(":", 3)
-    console.log(time1Val)
-    console.log(time2Val)
-
 
     if(time1Val[0] < time2Val[0]) {
         return true
@@ -36,7 +33,6 @@ function compareTimes(time1, time2) {
 }
 
 
-startTimer()
 
 
 
